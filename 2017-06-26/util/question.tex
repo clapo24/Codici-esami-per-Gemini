@@ -1,0 +1,39 @@
+Definiamo un {\em monitor} come un oggetto che pu\`o essere posseduto da un solo processo alla volta e a cui \`e associata
+una {\em variabile di condizione}. Il possessore del monitor pu\`o eseguire le operazioni di {\em attesa} e {\em notifica} sulla variabile di condizione
+associata. L'operazione di attesa rilascia il monitor, sospende il processo fino a quando un altro processo esegue l'operazione di notifica
+sulla stessa variabile di condizione, quindi riacquisisce il monitor. L'operazione di notifica risveglia uno dei processi in attesa sulla
+variabile di condizione, se ve ne sono, altrimenti non fa niente.
+
+Per realizzare i monitor definiamo la seguente struttura (file {\tt sistema.cpp}):
+
+\begin{verbatim}
+    struct des_monitor {
+            natl owner;
+            natl mutex;
+            natl cond;
+            int num_waiting;
+    };
+\end{verbatim}
+
+Il campo {\tt owner} contiene l'id del processo che possiede il monitor (0 se nessun processo possiede attualmente il monitor).
+I campi {\tt mutex} e {\tt cond} sono due indici di semafori. Il campo \verb|num_waiting| tiene conto del numero di processi
+in attesa sulla variabile di condizione.
+
+Le seguenti primitive, accessibili dal livello utente, operano sui monitor (nei casi di errore, abortiscono il processo chiamante):
+\begin{itemize}
+\item \verb|natl monitor_ini()| (gi\`a realizzata): inizializza un nuovo monitor, con i campi {\tt owner} e \verb|num_waiting| entrambi a 0, 
+{\tt mutex} con l'indice di un semaforo di valore iniziale 1, {\tt cond} con l'indice di un semaforo di valore iniziale 0.
+Restituisce l'identificatore del nuovo monitor. Se non \`e possibile creare un nuovo monitor, restituisce {\tt 0xFFFFFFFF}.
+\item \verb|void monitor_enter(natl mon)| (gi\`a realizzata): tenta di impadronirsi del monitor di identificatore {\tt mon}.
+Se il monitor appartiene gi\`a a qualche altro processo, sospende il processo in attesa che il monitor venga prima rilasciato.
+\`E un errore tentare di impadronirsi di un monitor che si possiede gi\`a.
+\item \verb|void monitor_leave(natl mon)| (gi\`a realizzata): rilascia il monitor di identificatore {\tt mon}.
+\`E un errore tentare di rilasciare un monitor che non si possiede.
+\item \verb|void monitor_wait(natl mon)|: si pone in attesa sulla variabile di condizione associata al monitor di identificatore {\tt mon}.
+\`E un errore tentare di porsi in attesa su una variable di condizione associata ad un monitor che non si possiede.
+\item \verb|void monitor_notify(natl mon)|: esegue una notifica sulla variabile di condizione associata al monitor di identificatore {\tt mon}.
+\`E un errore tentare di eseguire una notifica su una variable di condizione associata ad un monitor che non si possiede.
+\end{itemize}
+
+Modificare i file \verb|sistema.cpp| e \verb|sistema.s| 
+in modo da realizzare le primitive mancanti.
